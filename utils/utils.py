@@ -10,7 +10,7 @@ import time
 import datetime
 import tensorflow as tf
 from tensorflow.python.client import timeline
-from tensorflow.python.profiler import model_analyzer, option_builder
+# from tensorflow.python.profiler import model_analyzer, option_builder
 from keras.layers import Conv2D, Input, BatchNormalization, LeakyReLU, ZeroPadding2D, UpSampling2D
 from keras.layers.merge import add, concatenate
 from keras.models import Model
@@ -393,7 +393,7 @@ def get_yolo_boxes_by_tf_with_code_view(sess, yolo_input_placeholder, yolo_outpu
     #
     # opt_builder = option_builder.ProfileOptionBuilder()
     # opt_builder.with_max_depth(10000)
-    # opt_builder.with_node_names(show_name_regexes=['utils.py.*'])
+    # opt_builder.with_node_names(show_name_regexes=['car_detection_utils.py.*'])
     # opt_builder.with_min_execution_time(min_micros=10)
     # opt_builder.select(['micros'])
     # opt_builder.order_by('micros')
