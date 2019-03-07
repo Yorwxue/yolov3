@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import cv2
 import numpy as np
+from PIL import Image, ImageDraw
 
 
 class face_object:
@@ -183,6 +184,22 @@ class face_object:
             cv2.rectangle(image, (xmin, ymin), (xmax, ymax), color, 3)
 
         return image
+
+    def puttext_in_chinese(self, img, color=(0, 0, 255), fontsize=40):
+        for i in range(1, self.face_count + 1):
+            # cv2 to pil
+            cv2_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            pil_img = Image.fromarray(cv2_img)
+
+            # text
+            draw = ImageDraw.Draw(pil_img)
+            # font = ImageFont.truetype("simhei.ttf", fontsize, encoding="utf-8")
+            # draw.text(location, text, color, font=font)  # third parameter is color
+            draw.text((self.ix[i], self.iy[i]), str(self.face_no[i]), color)  # third parameter is color
+
+            # pil to cv2
+            cv2_text_im = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+            return cv2_text_im
 
 
 def get_img_by_tracker_box(box, small_img, real_size_img, re_scale):
