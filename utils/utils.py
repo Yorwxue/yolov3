@@ -9,6 +9,7 @@ from .bbox import BoundBox, bbox_iou
 from scipy.special import expit
 import time
 import datetime
+import copy
 import tensorflow as tf
 from tensorflow.python.client import timeline
 # from tensorflow.python.profiler import model_analyzer, option_builder
@@ -46,6 +47,19 @@ def crop_boxes(image, boxes):
             images_list.append(image[ymin: ymax, xmin: xmax, :])
 
     return images_list
+
+
+def yolo_draw_boxes(image, boxes, seq_no='', color=(255, 50, 50), font_size=6):
+    display_image = copy.copy(image)
+    for box in boxes:
+        if len(seq_no):
+            cv2.putText(display_image, str(seq_no),
+                    (box.xmin, box.ymax - 13),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    font_size*1e-3 * image.shape[0],
+                    (0, 255, 0), thickness=8)
+        cv2.rectangle(display_image, (box.xmin, box.ymin), (box.xmax, box.ymax), color, 3)
+    return display_image
 
 
 def evaluate(model,
