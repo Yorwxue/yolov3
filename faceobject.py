@@ -186,20 +186,95 @@ class face_object:
         return image
 
     def puttext_in_chinese(self, img, color=(0, 0, 255), fontsize=40):
-        for i in range(1, self.face_count + 1):
-            # cv2 to pil
-            cv2_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            pil_img = Image.fromarray(cv2_img)
+        if self.face_count == 1:  # 1 means there are only initial value in the tracker
+            return img
 
-            # text
-            draw = ImageDraw.Draw(pil_img)
+        # cv2 to pil
+        cv2_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        pil_img = Image.fromarray(cv2_img)
+
+        # drawing
+        draw = ImageDraw.Draw(pil_img)
+        for i in range(1, self.face_count + 1):
+
             # font = ImageFont.truetype("simhei.ttf", fontsize, encoding="utf-8")
             # draw.text(location, text, color, font=font)  # third parameter is color
             draw.text((self.ix[i], self.iy[i]), str(self.face_no[i]), color)  # third parameter is color
 
-            # pil to cv2
-            cv2_text_im = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
-            return cv2_text_im
+        # pil to cv2
+        cv2_text_im = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+        return cv2_text_im
+
+    def bbox2tracker(self, bbox, position_limit):
+        """
+
+        :param bbox:
+        :param position_limit: detecting car region and stop car region
+        :return:
+        """
+        ix = []
+        iy = []
+        w = []
+        h = []
+        face_name = []
+        face_image_data = []
+        for box_idx, yolo_box in enumerate(bbox):
+            yolo_box_w = yolo_box.xmax - yolo_box.xmin
+            yolo_box_h = yolo_box.ymax - yolo_box.ymin
+            yolo_box_x = yolo_box.xmin + int(yolo_box_w / 2)
+            yolo_box_y = yolo_box.ymin + int(yolo_box_h / 2)
+
+            xmin = yolo_box.xmin
+            xmax = yolo_box.xmax
+            ymin = yolo_box.ymin
+            ymax = yolo_box.ymax
+
+            xstop = (xmin + xmax) / 2
+            ystop = ymax
+
+            list_xpoint = [position_limit[0][0][0][0], position_limit[0][1][0][0],
+                           position_limit[0][2][0][0],
+                           position_limit[0][3][0][0]]
+            list_ypoint = [position_limit[0][0][0][1], position_limit[0][1][0][1],
+                           position_limit[0][2][0][1],
+                           position_limit[0][3][0][1]]
+
+            if xstop > min(list_xpoint) and xstop < max(list_xpoint) and \
+               ystop > min(list_ypoint) and ystop < max(list_ypoint):
+                ix.append(int(yolo_box_x))
+                iy.append(int(yolo_box_y))
+                w.append(int(yolo_box_w))
+                h.append(int(yolo_box_h))
+                face_name.append('')
+                face_image_data.append('')
+            else:
+                continue
+
+        self.detect_face(len(ix), ix, iy, w, h, face_name, face_image_data)
+        self.check_face()
+
+    def get_crop_images(self, image):
+        """
+
+        :param box:
+        :param small_img:
+        :param real_size_img:
+        :param re_scale:
+        :return:
+        """
+        image_shape = image.shape
+        crop_images = list()
+        for i in range(1, self.face_count + 1):
+            box_wmin = np.max([int((self.ix[i] - self.w[i] / 2)), 0])
+            box_wmax = np.min([int((self.ix[i] + self.w[i] / 2)), image_shape[1]])
+            box_hmin = np.max([int((self.iy[i] - self.h[i] / 2)), 0])
+            box_hmax = np.min([int((self.iy[i] + self.h[i] / 2)), image_shape[0]])
+
+            crop_image = image[box_hmin:box_hmax, box_wmin:box_wmax, :]
+            crop_images.append(crop_image)
+            # show plate
+            # cv2.imshow('track_no_%s' % track[4], crop_image)
+        return crop_images
 
 
 def get_img_by_tracker_box(box, small_img, real_size_img, re_scale):

@@ -33,6 +33,7 @@ def makedirs(path):
 
 def crop_boxes(image, boxes):
     images_list = list()
+    boxes_list = list()
     for box in boxes:
         xmin = np.max([box.xmin, 0])  # np.max([int((box.x - box.w / 2) * image.shape[1]),0])
         xmax = np.min([box.xmax, image.shape[1]])  # np.min([int((box.x + box.w / 2) * image.shape[1]),image.shape[1]])
@@ -45,8 +46,9 @@ def crop_boxes(image, boxes):
             # print(xmax-xmin)
             # print(ymax-ymin)
             images_list.append(image[ymin: ymax, xmin: xmax, :])
+            boxes_list.append(box)
 
-    return images_list
+    return images_list, boxes_list
 
 
 def yolo_draw_boxes(image, boxes, seq_no='', color=(255, 50, 50), font_size=6):

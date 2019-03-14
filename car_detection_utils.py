@@ -11,9 +11,10 @@ configure = Config(os.path.abspath(os.path.join(os.path.curdir)))
 nodejs_CarStatistics_url = configure.nodejs_CarStatistics_url
 CarStatistics_dict = {}
 
-mongodb = Mongodb()
-mongodblen = mongodb.search_data()
-max_seq_no = int(mongodblen[0]['flow_no']) if mongodblen else 0
+# mongodb = Mongodb()
+# mongodblen = mongodb.search_data()
+# max_seq_no = int(mongodblen[0]['flow_no']) if mongodblen else 0
+max_seq_no = 0
 
 
 def draw_boxes(image, boxes, color=(0, 255, 0)):
