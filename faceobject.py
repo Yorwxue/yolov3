@@ -149,7 +149,7 @@ class face_object:
 
     # 檢查臉是否持續一段時間
     def check_face(self, frame_idx=None, no_face=None):
-        del_list = []
+        del_list = []  # tracker_no
         for i in range(1, self.face_count + 1):
             if self.face_no_run[i] == 0:
                 self.face_no_time[i] = self.face_no_time[i] - 1
@@ -162,9 +162,10 @@ class face_object:
         return_image_data = dict()
         for i in del_list:
             if not isinstance(frame_idx, type(None)):
-                self.face_image_data[i]['finish'] = frame_idx
-                self.face_image_data[i]['vanish_flag'] = True
-                return_image_data[self.face_no[i]] = copy.copy(self.face_image_data[i])
+                tracker_list_index = self.face_no.index(i)
+                self.face_image_data[tracker_list_index]['finish'] = frame_idx
+                self.face_image_data[tracker_list_index]['vanish_flag'] = True
+                return_image_data[i] = copy.copy(self.face_image_data[tracker_list_index])
 
             self.del_face(i)
             if no_face:
