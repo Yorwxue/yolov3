@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
+import copy
 
 
 class face_object:
@@ -17,7 +18,7 @@ class face_object:
         self.face_name = ['']  # face name show in each tracker
         self.face_name_list = [{'none': 0}]  # face name count in each tracker
         self.face_name_count_max = [0]  # face name count max in each tracker
-        self.face_image_data = ['']  # face image data
+        self.face_image_data = [{}]  # face image data
         self.center_x = [0]  # face rectangular position central x latest
         self.center_y = [0]  # face rectangular position central y latest
         self.distance = 4  # face rectangular position distance, 1/distance value high , distance close
@@ -28,7 +29,7 @@ class face_object:
         self.add_values = 2  # face cumulative number
         self.add_values_max = 60  # face cumulative number max
 
-        self.trackers = {} # a dict to stash trackers. { key:index, value:tracker object}
+        # self.trackers = {} # a dict to stash trackers. { key:index, value:tracker object} -> add to self.face_image_data
 
     def tracker_init(self, init_value):
         self.face_no_count = init_value
@@ -147,7 +148,7 @@ class face_object:
         self.face_name_count_max[update_index] = int(face_name_max_no[1])
 
     # 檢查臉是否持續一段時間
-    def check_face(self, no_face=None):
+    def check_face(self, frame_idx=None, no_face=None):
         del_list = []
         for i in range(1, self.face_count + 1):
             if self.face_no_run[i] == 0:
@@ -158,10 +159,18 @@ class face_object:
             if self.face_no_time[i] < 0:
                 del_list.append(self.face_no[i])
 
+        return_image_data = dict()
         for i in del_list:
+            if not isinstance(frame_idx, type(None)):
+                self.face_image_data[i]['finish'] = frame_idx
+                self.face_image_data[i]['vanish_flag'] = True
+                return_image_data[self.face_no[i]] = copy.copy(self.face_image_data[i])
+
             self.del_face(i)
             if no_face:
                 del (no_face[i])
+
+        return return_image_data
 
     def draw_boxes(self, image, color=(0, 0, 255)):
 
@@ -205,7 +214,7 @@ class face_object:
         cv2_text_im = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
         return cv2_text_im
 
-    def bbox2tracker(self, bbox, position_limit):
+    def bbox2tracker(self, frame_idx, bbox, position_limit):
         """
 
         :param bbox:
@@ -239,6 +248,17 @@ class face_object:
                            position_limit[0][2][0][1],
                            position_limit[0][3][0][1]]
 
+            # for SUCK project
+            tracker_info = {
+                'stop_flag': False,
+                'vanish_flag': False,
+                'start': frame_idx,
+                'finish': -1,
+                'flow_no': '',
+                'stop_sec_counter': 0,
+                'plate_num': ''
+            }
+
             if xstop > min(list_xpoint) and xstop < max(list_xpoint) and \
                ystop > min(list_ypoint) and ystop < max(list_ypoint):
                 ix.append(int(yolo_box_x))
@@ -246,12 +266,12 @@ class face_object:
                 w.append(int(yolo_box_w))
                 h.append(int(yolo_box_h))
                 face_name.append('')
-                face_image_data.append('')
+                face_image_data.append(tracker_info)
+
             else:
                 continue
 
         self.detect_face(len(ix), ix, iy, w, h, face_name, face_image_data)
-        self.check_face()
 
     def get_crop_images(self, image):
         """
@@ -264,6 +284,7 @@ class face_object:
         """
         image_shape = image.shape
         crop_images = list()
+        tracker_no_list = list()
         for i in range(1, self.face_count + 1):
             box_wmin = np.max([int((self.ix[i] - self.w[i] / 2)), 0])
             box_wmax = np.min([int((self.ix[i] + self.w[i] / 2)), image_shape[1]])
@@ -272,9 +293,10 @@ class face_object:
 
             crop_image = image[box_hmin:box_hmax, box_wmin:box_wmax, :]
             crop_images.append(crop_image)
+            tracker_no_list.append(self.face_no[i])
             # show plate
             # cv2.imshow('track_no_%s' % track[4], crop_image)
-        return crop_images
+        return crop_images, tracker_no_list
 
 
 def get_img_by_tracker_box(box, small_img, real_size_img, re_scale):

@@ -126,3 +126,65 @@ def stop_car_recognition(frame, display_frame, tracker, stop_car, car_flow, poin
                                            fontsize=60)
 
     return display_frame, stop_flag, car_flow
+
+
+def offline_stop_car_recognition(frame, display_frame, tracker, point_polylines, track_no_dir,
+                         threashold_of_stopping=30):
+    for track_idx in range(1, tracker.face_count + 1):
+        tracker_x = float(tracker.ix[track_idx])
+        tracker_y = float(tracker.iy[track_idx])
+        tracker_w = float(tracker.w[track_idx])
+        tracker_h = float(tracker.h[track_idx])
+
+        xmin = int((tracker_x - tracker_w / 2))
+        xmax = int((tracker_x + tracker_w / 2))
+        ymin = int((tracker_y - tracker_h / 2))
+        ymax = int((tracker_y + tracker_h / 2))
+        xstop = (xmin + xmax) / 2
+        ystop = ymax
+
+        list_xpoint = [point_polylines[0][0][0], point_polylines[1][0][0], point_polylines[2][0][0],
+                       point_polylines[3][0][0]]
+        list_ypoint = [point_polylines[0][0][1], point_polylines[1][0][1], point_polylines[2][0][1],
+                       point_polylines[3][0][1]]
+
+        if xstop > min(list_xpoint) and xstop < max(list_xpoint) and \
+                ystop > min(list_ypoint) and ystop < max(list_ypoint):
+            # car_flow[track_no][0]: index start from 1, not 0
+            # car_flow[track_no][1]: 0(illegal) or 1(legal)
+
+            if tracker.face_image_data[track_idx]["flow_no"] == '':
+                tracker.face_image_data[track_idx]["flow_no"] = max_seq_no + 1
+
+            tracker.face_image_data[track_idx]["stop_sec_counter"] += 1
+
+            if tracker.face_image_data[track_idx]["stop_sec_counter"] >= threashold_of_stopping:
+                tracker.face_image_data[track_idx]["stop_flag"] = True
+
+                # CarStatistics_dict[car_flow[track[4]][0]] = car_flow[track[4]][1]
+            else:
+                # save_frame = puttext_in_chinese(frame, '未停車再開', (xstop, ymax - 30), (255, 0, 255), 20)
+                save_frame = draw_boxes_by_center(frame, [tracker_x, tracker_y, tracker_w, tracker_h], tracker.face_image_data[track_idx]["flow_no"], color=(50, 50, 255))
+
+                # save image of illegal car behavior
+                track_no_path = os.path.join(track_no_dir, "track_no_%s" % str(track_idx))
+                if not os.path.exists(track_no_path):
+                    os.makedirs(track_no_path)
+                cv2.imwrite(os.path.join(track_no_path, "%s.png" % str(track_idx)), save_frame)
+            # if len(CarStatistics_dict) <= 7:
+            #     if car_flow[track[4]][0] not in CarStatistics_dict.keys():
+            #         CarStatistics_dict[car_flow[track[4]][0]] = car_flow[track[4]][1]
+            # else:
+            #     CarStatistics_dict.pop(np.min(list(CarStatistics_dict.keys())))
+            #     CarStatistics_dict[car_flow[track[4]][0]] = car_flow[track[4]][1]
+            #
+            # submit(nodejs_CarStatistics_url, {"car_no": CarStatistics_dict})
+
+        if tracker.face_image_data[track_idx]["flow_no"] != '':
+            display_frame = puttext_in_chinese(display_frame,
+                                               str(tracker.face_image_data[track_idx]["stop_sec_counter"]),
+                                               (xstop, ymax),
+                                               (255, 0, 255),
+                                               fontsize=60)
+
+    return display_frame
