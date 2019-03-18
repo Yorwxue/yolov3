@@ -128,7 +128,7 @@ def stop_car_recognition(frame, display_frame, tracker, stop_car, car_flow, poin
     return display_frame, stop_flag, car_flow
 
 
-def offline_stop_car_recognition(frame, display_frame, tracker, point_polylines, track_no_dir,
+def offline_stop_car_recognition(tracker, point_polylines, track_no_dir, frame=None, display_frame=None,
                          threashold_of_stopping=30):
     for track_idx in range(1, tracker.face_count + 1):
         tracker_x = float(tracker.ix[track_idx])
@@ -162,15 +162,17 @@ def offline_stop_car_recognition(frame, display_frame, tracker, point_polylines,
                 tracker.face_image_data[track_idx]["stop_flag"] = True
 
                 # CarStatistics_dict[car_flow[track[4]][0]] = car_flow[track[4]][1]
-            else:
-                # save_frame = puttext_in_chinese(frame, '未停車再開', (xstop, ymax - 30), (255, 0, 255), 20)
-                save_frame = draw_boxes_by_center(frame, [tracker_x, tracker_y, tracker_w, tracker_h], tracker.face_image_data[track_idx]["flow_no"], color=(50, 50, 255))
-
-                # save image of illegal car behavior
-                track_no_path = os.path.join(track_no_dir, "track_no_%s" % str(track_idx))
-                if not os.path.exists(track_no_path):
-                    os.makedirs(track_no_path)
-                cv2.imwrite(os.path.join(track_no_path, "%s.png" % str(track_idx)), save_frame)
+            # else:
+            #     # save_frame = puttext_in_chinese(frame, '未停車再開', (xstop, ymax - 30), (255, 0, 255), 20)
+            #     # save_frame = draw_boxes_by_center(frame, [tracker_x, tracker_y, tracker_w, tracker_h], tracker.face_image_data[track_idx]["flow_no"], color=(50, 50, 255))
+            #     save_frame = frame
+            #
+            #     # save image of illegal car behavior
+            #     if tracker.face_image_data[track_idx]["vanish_flag"]:
+            #         track_no_path = os.path.join(track_no_dir, "track_no_%s" % str(track_idx))
+            #         if not os.path.exists(track_no_path):
+            #             os.makedirs(track_no_path)
+            #         cv2.imwrite(os.path.join(track_no_path, "%s.png" % str(track_idx)), save_frame)
             # if len(CarStatistics_dict) <= 7:
             #     if car_flow[track[4]][0] not in CarStatistics_dict.keys():
             #         CarStatistics_dict[car_flow[track[4]][0]] = car_flow[track[4]][1]
@@ -180,11 +182,21 @@ def offline_stop_car_recognition(frame, display_frame, tracker, point_polylines,
             #
             # submit(nodejs_CarStatistics_url, {"car_no": CarStatistics_dict})
 
-        if tracker.face_image_data[track_idx]["flow_no"] != '':
-            display_frame = puttext_in_chinese(display_frame,
-                                               str(tracker.face_image_data[track_idx]["stop_sec_counter"]),
-                                               (xstop, ymax),
-                                               (255, 0, 255),
-                                               fontsize=60)
+        elif tracker.face_image_data[track_idx]["stop_sec_counter"] >= 1:
+            tracker.face_image_data[track_idx]["stop_sec_counter"] = 0
+            save_video_path = os.path.join(track_no_dir,
+                                               "track_no_%s" % str(track_idx))
+            if not os.path.exists(save_video_path):
+                os.makedirs(save_video_path)
+            save_video_path = os.path.join(save_video_path,
+                                           "%s.jpg" % str(track_idx))
+            cv2.imwrite(save_video_path, display_frame)
+
+        # if tracker.face_image_data[track_idx]["flow_no"] != '' and not isinstance(display_frame, type(None)):
+        #     display_frame = puttext_in_chinese(display_frame,
+        #                                        str(tracker.face_image_data[track_idx]["stop_sec_counter"]),
+        #                                        (xstop, ymax),
+        #                                        (255, 0, 255),
+        #                                        fontsize=60)
 
     return display_frame

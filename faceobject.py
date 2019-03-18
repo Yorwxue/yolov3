@@ -112,7 +112,7 @@ class face_object:
         self.h[update_index] = h
         # update face_name from face list
         self.update_face_name_list(update_index, face_name)
-        self.face_image_data[update_index] = face_image_data
+        # self.face_image_data[update_index] = face_image_data
         self.center_x[update_index] = ix + w/2
         self.center_y[update_index] = iy + h/2
 

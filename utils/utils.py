@@ -254,8 +254,9 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w):
             classes = netout[row, col, b, 5:]
 
             box = BoundBox(x - w / 2, y - h / 2, x + w / 2, y + h / 2, objectness, classes)
-            # if w>=0.2 and h>=0.2:
-            boxes.append(box)
+            # if True:
+            if w>=0.1 or h>=0.1:
+                boxes.append(box)
 
     return boxes
 
