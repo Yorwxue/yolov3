@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 import copy
+import nltk
+import operator
 
 
 class face_object:
@@ -250,6 +252,8 @@ class face_object:
                            position_limit[0][3][0][1]]
 
             # for SUCK project
+            freq_dict = freq_dict_with_condition()
+
             tracker_info = {
                 'stop_flag': False,
                 'vanish_flag': False,
@@ -257,7 +261,7 @@ class face_object:
                 'finish': -1,
                 'flow_no': '',
                 'stop_sec_counter': 0,
-                'plate_num': ''
+                'freq_dict_for_plate_num': freq_dict
             }
 
             if xstop > min(list_xpoint) and xstop < max(list_xpoint) and \
@@ -298,6 +302,41 @@ class face_object:
             # show plate
             # cv2.imshow('track_no_%s' % track[4], crop_image)
         return crop_images, tracker_no_list
+
+
+class freq_dict_with_condition():
+    """
+    :return:
+    """
+    def __init__(self):
+        self.freq_dict = nltk.FreqDist()
+
+    def add_num(self, num):
+        if len(num) > 5:
+            # freq_dict can't work when it doesn't have any element
+            if num not in self.freq_dict:
+                self.freq_dict[num] = 1
+            # counter of ccr result
+            elif self.freq_dict.freq(self.freq_dict.max()) < 0.6 and \
+                    self.freq_dict[self.freq_dict.max()] <= 15 or \
+                    self.freq_dict.N() < 10:
+                self.freq_dict[num] += 1
+
+    def get_top1(self):
+        sorted_by_count = sorted(self.freq_dict.items(),
+                                 key=operator.itemgetter(1))
+        sorted_by_count.reverse()
+        # 0 means plate number
+        # 1 means times
+        top1_result = sorted_by_count[0][0]
+        return top1_result
+
+    def get_top1_with_condition(self):
+        result = self.get_top1()
+        if self.freq_dict.freq(result) > 0.4 or self.freq_dict[result] > 10:
+            return result
+        else:
+            return None
 
 
 def get_img_by_tracker_box(box, small_img, real_size_img, re_scale):
