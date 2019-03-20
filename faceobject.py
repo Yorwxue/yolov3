@@ -188,11 +188,11 @@ class face_object:
             ymin = int((tracker_y - tracker_h / 2))
             ymax = int((tracker_y + tracker_h / 2))
 
-            cv2.putText(image, str(self.face_no[i]) + ' (' + str(self.face_no_time[i]) + ')',
-                        (xmin, ymax - 13),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        1e-3 * image.shape[0],
-                        (0, 255, 0), 2)
+            # cv2.putText(image, str(self.face_no[i]) + ' (' + str(self.face_no_time[i]) + ')',
+            #             (xmin, ymax - 13),
+            #             cv2.FONT_HERSHEY_SIMPLEX,
+            #             1e-3 * image.shape[0],
+            #             (0, 255, 0), 2)
             cv2.rectangle(image, (xmin, ymin), (xmax, ymax), color, 3)
 
         return image

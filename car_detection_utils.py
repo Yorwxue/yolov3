@@ -11,10 +11,10 @@ configure = Config(os.path.abspath(os.path.join(os.path.curdir)))
 nodejs_CarStatistics_url = configure.nodejs_CarStatistics_url
 CarStatistics_dict = {}
 
-# mongodb = Mongodb()
-# mongodblen = mongodb.search_data()
-# max_seq_no = int(mongodblen[0]['flow_no']) if mongodblen else 0
-max_seq_no = 0
+mongodb = Mongodb()
+mongodblen = mongodb.search_data()
+max_seq_no = int(mongodblen[0]['flow_no']) if mongodblen else 0
+# max_seq_no = 0
 
 
 def draw_boxes(image, boxes, color=(0, 255, 0)):
@@ -109,9 +109,9 @@ def stop_car_recognition(frame, display_frame, tracker, stop_car, car_flow, poin
         else:
             stop_flag = False
             # save_frame = puttext_in_chinese(frame, '未停車再開', (xstop, ymax - 30), (255, 0, 255), 20)
-            save_frame = draw_boxes_by_center(frame, tracker, car_flow[track[4]][0], color=(50, 50, 255))
+            # save_frame = draw_boxes_by_center(frame, tracker, car_flow[track[4]][0], color=(50, 50, 255))
 
-            cv2.imwrite(os.path.join(track_no_path, "%s.png" % (track[4])), save_frame)
+            # cv2.imwrite(os.path.join(track_no_path, "%s.png" % (track[4])), save_frame)
         if len(CarStatistics_dict) <= 7:
             if car_flow[track[4]][0] not in CarStatistics_dict.keys():
                 CarStatistics_dict[car_flow[track[4]][0]] = car_flow[track[4]][1]
