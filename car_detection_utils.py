@@ -152,14 +152,19 @@ def offline_stop_car_recognition(tracker, point_polylines, track_no_dir, frame=N
                 ystop > min(list_ypoint) and ystop < max(list_ypoint):
             # car_flow[track_no][0]: index start from 1, not 0
             # car_flow[track_no][1]: 0(illegal) or 1(legal)
-
+            global max_seq_no
             if tracker.face_image_data[track_idx]["flow_no"] == '':
-                tracker.face_image_data[track_idx]["flow_no"] = max_seq_no + 1
+                max_seq_no +=1
+                tracker.face_image_data[track_idx]["flow_no"] = max_seq_no
 
             tracker.face_image_data[track_idx]["stop_sec_counter"] += 1
 
             if tracker.face_image_data[track_idx]["stop_sec_counter"] >= threashold_of_stopping:
                 tracker.face_image_data[track_idx]["stop_flag"] = True
+
+
+            CarStatistics_dict[tracker.face_image_data[track_idx]["flow_no"]] = int(tracker.face_image_data[track_idx]["stop_flag"])
+            submit(nodejs_CarStatistics_url, {"car_no": CarStatistics_dict})
 
                 # CarStatistics_dict[car_flow[track[4]][0]] = car_flow[track[4]][1]
             # else:

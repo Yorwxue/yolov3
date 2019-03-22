@@ -23,7 +23,7 @@ class face_object:
         self.face_image_data = [{}]  # face image data
         self.center_x = [0]  # face rectangular position central x latest
         self.center_y = [0]  # face rectangular position central y latest
-        self.distance = 4  # face rectangular position distance, 1/distance value high , distance close
+        self.distance = 2  # face rectangular position distance, 1/distance value high , distance close
         self.face_count = 0  # face count
         self.face_no_time = [0]  # face position cumulative number
         self.face_no_time_max = 40  # face position cumulative number max
@@ -188,11 +188,14 @@ class face_object:
             ymin = int((tracker_y - tracker_h / 2))
             ymax = int((tracker_y + tracker_h / 2))
 
-            # cv2.putText(image, str(self.face_no[i]) + ' (' + str(self.face_no_time[i]) + ')',
-            #             (xmin, ymax - 13),
-            #             cv2.FONT_HERSHEY_SIMPLEX,
-            #             1e-3 * image.shape[0],
-            #             (0, 255, 0), 2)
+            cv2.putText(image,
+                        # str(self.face_no[i])  # tracker no
+                        str(self.face_image_data[i]["flow_no"])  # flow no
+                        + ' (' + str(self.face_no_time[i]) + ')',
+                        (xmin, ymax - 13),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1e-3 * image.shape[0],
+                        (0, 0, 0), 2)
             cv2.rectangle(image, (xmin, ymin), (xmax, ymax), color, 3)
 
         return image
