@@ -5,7 +5,7 @@ import requests
 from config.mongodb import Mongodb
 from config.configure import Config
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 configure = Config(os.path.abspath(os.path.join(os.path.curdir)))
 nodejs_CarStatistics_url = configure.nodejs_CarStatistics_url
@@ -165,7 +165,8 @@ def offline_stop_car_recognition(tracker, point_polylines, track_no_dir, frame=N
 
             CarStatistics_dict[tracker.face_image_data[track_idx]["flow_no"]] = int(tracker.face_image_data[track_idx]["stop_flag"])
             submit(nodejs_CarStatistics_url, {"car_no": CarStatistics_dict})
-
+            if len(CarStatistics_dict) > 10:# send node_js CarStatistics_dict length limit
+                CarStatistics_dict.pop(tracker.face_image_data[track_idx]["flow_no"] - 10)
                 # CarStatistics_dict[car_flow[track[4]][0]] = car_flow[track[4]][1]
             # else:
             #     # save_frame = puttext_in_chinese(frame, '未停車再開', (xstop, ymax - 30), (255, 0, 255), 20)
