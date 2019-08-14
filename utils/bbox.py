@@ -3,6 +3,7 @@ import os
 import cv2
 from .colors import get_color
 
+
 class BoundBox:
     def __init__(self, xmin, ymin, xmax, ymax, c = None, classes = None):
         self.xmin = xmin
@@ -13,20 +14,19 @@ class BoundBox:
         self.c       = c
         self.classes = classes
 
-        self.label = -1
-        self.score = -1
+        self.label = np.argmax(self.classes)
+        self.score = self.classes[self.get_label()]
 
     def get_label(self):
         if self.label == -1:
             self.label = np.argmax(self.classes)
-        
         return self.label
     
     def get_score(self):
         if self.score == -1:
             self.score = self.classes[self.get_label()]
-            
-        return self.score      
+        return self.score
+
 
 def _interval_overlap(interval_a, interval_b):
     x1, x2 = interval_a

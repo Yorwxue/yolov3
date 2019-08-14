@@ -51,15 +51,27 @@ def crop_boxes(image, boxes):
     return images_list, boxes_list
 
 
-def yolo_draw_boxes(image, boxes, seq_no='', color=(255, 50, 50), font_size=6):
+def yolo_draw_boxes(image, boxes, show_class_name=False, color=(255, 50, 50), font_size=6, font_thickness=3, font_color=(0, 255, 0), yolo_config=None):
+    """
+    If you want to show class_name, yolo_config is necessary.
+    :param image:
+    :param boxes:
+    :param show_class_name:
+    :param color:
+    :param font_size:
+    :param font_thickness:
+    :param font_color:
+    :param yolo_config:
+    :return:
+    """
     display_image = copy.copy(image)
     for box in boxes:
-        if len(seq_no):
-            cv2.putText(display_image, str(seq_no),
+        if show_class_name and yolo_config is not None:
+            cv2.putText(display_image, yolo_config["model"]["labels"][box.label],
                     (box.xmin, box.ymax - 13),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     font_size*1e-3 * image.shape[0],
-                    (0, 255, 0), thickness=8)
+                    font_color, thickness=font_thickness)
         cv2.rectangle(display_image, (box.xmin, box.ymin), (box.xmax, box.ymax), color, 3)
     return display_image
 
@@ -254,9 +266,10 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w):
             classes = netout[row, col, b, 5:]
 
             box = BoundBox(x - w / 2, y - h / 2, x + w / 2, y + h / 2, objectness, classes)
-            # if True:
-            if w>=0.1 or h>=0.1:
-                boxes.append(box)
+
+            boxes.append(box)
+            # if w>=0.1 or h>=0.1:
+            #     boxes.append(box)
 
     return boxes
 
