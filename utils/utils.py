@@ -204,9 +204,9 @@ def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w):
         x_offset, x_scale = (net_w - new_w) / 2. / net_w, float(new_w) / net_w
         y_offset, y_scale = (net_h - new_h) / 2. / net_h, float(new_h) / net_h
 
-        boxes[i].xmin = int((boxes[i].xmin - x_offset) / x_scale * image_w)
+        boxes[i].xmin = np.max([int((boxes[i].xmin - x_offset) / x_scale * image_w), 0])
         boxes[i].xmax = int((boxes[i].xmax - x_offset) / x_scale * image_w)
-        boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
+        boxes[i].ymin = np.max([int((boxes[i].ymin - y_offset) / y_scale * image_h), 0])
         boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)
 
 
